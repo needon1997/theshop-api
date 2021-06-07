@@ -11,9 +11,11 @@ type ServerConfiguration struct {
 	JWTConfig     JWTConfiguration         `mapstructure:"jwt"`
 }
 type ServiceNameConfiguration struct {
-	UserServiceName  string `mapstructure:"user_svc_name"`
-	EmailServiceName string `mapstructure:"email_svc_name"`
-	GoodsServiceName string `mapstructure:"goods_svc_name"`
+	UserServiceName      string `mapstructure:"user_svc_name"`
+	EmailServiceName     string `mapstructure:"email_svc_name"`
+	GoodsServiceName     string `mapstructure:"goods_svc_name"`
+	InventoryServiceName string `mapstructure:"inventory_svc_name"`
+	OrderServiceName     string `mapstructure:"order_svc_name"`
 }
 type LogConfiguration struct {
 	LogPath string `mapstructure:"log_path"`

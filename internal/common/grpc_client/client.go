@@ -85,3 +85,23 @@ func GetGoodsSvcConn() (*grpc.ClientConn, error) {
 	}
 	return conn, nil
 }
+func GetInventorySvcConn() (*grpc.ClientConn, error) {
+	zap.S().Debug("Get connect gRPC goods service server")
+	url := fmt.Sprintf(CONSUL_LB_TEMPLATE, config.ServerConfig.ServiceConfig.InventoryServiceName, "")
+	conn, err := grpc.Dial(url, grpc.WithInsecure(), grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy": "round_robin"}`))
+	if err != nil {
+		zap.S().Errorf("[GetUserSvcClient]  [fail to connect with service provider]   ERROR: %s", err.Error())
+		return nil, errors.New(INTERNAL_ERROR)
+	}
+	return conn, nil
+}
+func GetIOrderSvcConn() (*grpc.ClientConn, error) {
+	zap.S().Debug("Get connect gRPC goods service server")
+	url := fmt.Sprintf(CONSUL_LB_TEMPLATE, config.ServerConfig.ServiceConfig.OrderServiceName, "")
+	conn, err := grpc.Dial(url, grpc.WithInsecure(), grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy": "round_robin"}`))
+	if err != nil {
+		zap.S().Errorf("[GetUserSvcClient]  [fail to connect with service provider]   ERROR: %s", err.Error())
+		return nil, errors.New(INTERNAL_ERROR)
+	}
+	return conn, nil
+}
