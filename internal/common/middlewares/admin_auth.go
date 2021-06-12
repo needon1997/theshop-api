@@ -2,7 +2,7 @@ package middlewares
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/needon1997/theshop-api/internal/user_api/utils"
+	"github.com/needon1997/theshop-api/internal/common"
 	"go.uber.org/zap"
 	"net/http"
 )
@@ -19,7 +19,7 @@ func ADMIN_AUTH() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		userInfoClaim, ok := claims.(*utils.JWTUserInfoClaim)
+		userInfoClaim, ok := claims.(*common.JWTUserInfoClaim)
 		if !ok {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"msg": "unknown error",

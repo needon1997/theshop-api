@@ -16,6 +16,7 @@ type ServiceNameConfiguration struct {
 	GoodsServiceName     string `mapstructure:"goods_svc_name"`
 	InventoryServiceName string `mapstructure:"inventory_svc_name"`
 	OrderServiceName     string `mapstructure:"order_svc_name"`
+	PaymentServiceName   string `mapstructure:"payment_svc_name"`
 }
 type LogConfiguration struct {
 	LogPath string `mapstructure:"log_path"`

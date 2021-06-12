@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/needon1997/theshop-api/internal/common"
 	"github.com/needon1997/theshop-api/internal/common/config"
 	_ "github.com/needon1997/theshop-api/internal/common/grpc_consul_resolver"
 	"go.uber.org/zap"
@@ -80,27 +81,42 @@ func GetGoodsSvcConn() (*grpc.ClientConn, error) {
 	url := fmt.Sprintf(CONSUL_LB_TEMPLATE, config.ServerConfig.ServiceConfig.GoodsServiceName, "")
 	conn, err := grpc.Dial(url, grpc.WithInsecure(), grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy": "round_robin"}`))
 	if err != nil {
-		zap.S().Errorf("[GetUserSvcClient]  [fail to connect with service provider]   ERROR: %s", err.Error())
+		zap.S().Errorf("[GetGoodsSvcClient]  [fail to connect with service provider]   ERROR: %s", err.Error())
 		return nil, errors.New(INTERNAL_ERROR)
 	}
 	return conn, nil
 }
 func GetInventorySvcConn() (*grpc.ClientConn, error) {
-	zap.S().Debug("Get connect gRPC goods service server")
+	zap.S().Debug("Get connect gRPC inventory service server")
 	url := fmt.Sprintf(CONSUL_LB_TEMPLATE, config.ServerConfig.ServiceConfig.InventoryServiceName, "")
 	conn, err := grpc.Dial(url, grpc.WithInsecure(), grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy": "round_robin"}`))
 	if err != nil {
-		zap.S().Errorf("[GetUserSvcClient]  [fail to connect with service provider]   ERROR: %s", err.Error())
+		zap.S().Errorf("[GetInventorySvcClient]  [fail to connect with service provider]   ERROR: %s", err.Error())
 		return nil, errors.New(INTERNAL_ERROR)
 	}
 	return conn, nil
 }
-func GetIOrderSvcConn() (*grpc.ClientConn, error) {
-	zap.S().Debug("Get connect gRPC goods service server")
+func GetOrderSvcConn() (*grpc.ClientConn, error) {
+	zap.S().Debug("Get connect gRPC order service server")
 	url := fmt.Sprintf(CONSUL_LB_TEMPLATE, config.ServerConfig.ServiceConfig.OrderServiceName, "")
 	conn, err := grpc.Dial(url, grpc.WithInsecure(), grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy": "round_robin"}`))
 	if err != nil {
-		zap.S().Errorf("[GetUserSvcClient]  [fail to connect with service provider]   ERROR: %s", err.Error())
+		zap.S().Errorf("[GetOrderSvcClient]  [fail to connect with service provider]   ERROR: %s", err.Error())
+		return nil, errors.New(INTERNAL_ERROR)
+	}
+	return conn, nil
+}
+func GetPaymentSvcConn() (*grpc.ClientConn, error) {
+	zap.S().Debug("Get connect gRPC payment service server")
+	//url := fmt.Sprintf(CONSUL_LB_TEMPLATE, config.ServerConfig.ServiceConfig.PaymentServiceName, "")
+	svc, err := common.GetServicesByNameTags(config.ServerConfig.ServiceConfig.PaymentServiceName, "")
+	if err != nil {
+		zap.S().Errorf("[GetPaymentSvcClient]  [fail to connect with service provider]   ERROR: %s", err.Error())
+		return nil, errors.New(INTERNAL_ERROR)
+	}
+	conn, err := grpc.Dial(fmt.Sprintf("%s:%v", svc[0].Address, svc[0].Port), grpc.WithInsecure())
+	if err != nil {
+		zap.S().Errorf("[GetPaymentSvcClient]  [fail to connect with service provider]   ERROR: %s", err.Error())
 		return nil, errors.New(INTERNAL_ERROR)
 	}
 	return conn, nil

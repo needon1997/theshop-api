@@ -3,12 +3,12 @@ package api
 import (
 	"context"
 	"github.com/gin-gonic/gin"
+	"github.com/needon1997/theshop-api/internal/common"
 	"github.com/needon1997/theshop-api/internal/common/grpc_client"
 	"github.com/needon1997/theshop-api/internal/common/proto"
 	"github.com/needon1997/theshop-api/internal/common/validation"
 	"github.com/needon1997/theshop-api/internal/user_api/forms"
 	"github.com/needon1997/theshop-api/internal/user_api/global"
-	"github.com/needon1997/theshop-api/internal/user_api/utils"
 	"go.uber.org/zap"
 	"net/http"
 	"strconv"
@@ -74,7 +74,7 @@ func UserPasswordLogin(c *gin.Context) {
 		return
 	}
 	if rsp.Result {
-		token := utils.NewJwtToken(utils.JWTUserInfoClaim{Id: int64(userInfo.Id), Nickname: userInfo.NickName, Role: uint8(userInfo.Role), StandardClaims: utils.GetStandardClaim()})
+		token := common.NewJwtToken(common.JWTUserInfoClaim{Id: int64(userInfo.Id), Nickname: userInfo.NickName, Role: uint8(userInfo.Role), StandardClaims: common.GetStandardClaim()})
 		c.JSON(http.StatusOK, gin.H{
 			MSG:   "login success",
 			TOKEN: token,

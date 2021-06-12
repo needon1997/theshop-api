@@ -93,7 +93,7 @@ func GetServicesByNameTags(svcName string, tag string) ([]Service, error) {
 	if err != nil {
 		return nil, err
 	}
-	svcs := make([]Service, len(svcsmap))
+	svcs := make([]Service, 0)
 	for _, v := range svcsmap {
 		svcs = append(svcs, v)
 	}
