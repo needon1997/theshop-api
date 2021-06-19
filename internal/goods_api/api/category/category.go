@@ -15,8 +15,10 @@ import (
 )
 
 func List(c *gin.Context) {
+	ispanCtx, _ := c.Get("ctx")
+	spanCtx := ispanCtx.(context.Context)
 	client := proto.NewGoodsClient(global.GoodsSvcConn)
-	rsp, err := client.GetAllCategorysList(context.Background(), &empty.Empty{})
+	rsp, err := client.GetAllCategorysList(spanCtx, &empty.Empty{})
 	if err != nil {
 		grpc_client.ParseGrpcErrorToHttp(err, c)
 		return
@@ -27,13 +29,15 @@ func List(c *gin.Context) {
 }
 
 func New(c *gin.Context) {
+	ispanCtx, _ := c.Get("ctx")
+	spanCtx := ispanCtx.(context.Context)
 	categoryForm := &forms.CategoryForm{}
 	err := validation.ValidateFormJSON(c, &categoryForm)
 	if err != nil {
 		return
 	}
 	client := proto.NewGoodsClient(global.GoodsSvcConn)
-	rsp, err := client.CreateCategory(context.Background(), &proto.CategoryInfoRequest{
+	rsp, err := client.CreateCategory(spanCtx, &proto.CategoryInfoRequest{
 		Name:           categoryForm.Name,
 		ParentCategory: categoryForm.Parent,
 		Level:          categoryForm.Level,
@@ -47,9 +51,11 @@ func New(c *gin.Context) {
 }
 
 func Detail(c *gin.Context) {
+	ispanCtx, _ := c.Get("ctx")
+	spanCtx := ispanCtx.(context.Context)
 	id := common.Atoi32(c.Param("id"))
 	client := proto.NewGoodsClient(global.GoodsSvcConn)
-	rsp, err := client.GetSubCategory(context.Background(), &proto.CategoryListRequest{
+	rsp, err := client.GetSubCategory(spanCtx, &proto.CategoryListRequest{
 		Id: id,
 	})
 	if err != nil {
@@ -60,9 +66,11 @@ func Detail(c *gin.Context) {
 }
 
 func Delete(c *gin.Context) {
+	ispanCtx, _ := c.Get("ctx")
+	spanCtx := ispanCtx.(context.Context)
 	id := common.Atoi32(c.Param("id"))
 	client := proto.NewGoodsClient(global.GoodsSvcConn)
-	_, err := client.DeleteCategory(context.Background(), &proto.DeleteCategoryRequest{Id: id})
+	_, err := client.DeleteCategory(spanCtx, &proto.DeleteCategoryRequest{Id: id})
 	if err != nil {
 		grpc_client.ParseGrpcErrorToHttp(err, c)
 		return
@@ -74,6 +82,8 @@ func Delete(c *gin.Context) {
 }
 
 func Update(c *gin.Context) {
+	ispanCtx, _ := c.Get("ctx")
+	spanCtx := ispanCtx.(context.Context)
 	id := common.Atoi32(c.Param("id"))
 	categoryUpdateForm := forms.CategoryUpdateForm{}
 	err := validation.ValidateFormJSON(c, &categoryUpdateForm)
@@ -81,7 +91,7 @@ func Update(c *gin.Context) {
 		return
 	}
 	client := proto.NewGoodsClient(global.GoodsSvcConn)
-	_, err = client.UpdateCategory(context.Background(), &proto.CategoryInfoRequest{
+	_, err = client.UpdateCategory(spanCtx, &proto.CategoryInfoRequest{
 		Id:    id,
 		Name:  categoryUpdateForm.Name,
 		IsTab: *categoryUpdateForm.IsTab,

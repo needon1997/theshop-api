@@ -14,6 +14,8 @@ import (
 )
 
 func List(c *gin.Context) {
+	ispanCtx, _ := c.Get("ctx")
+	spanCtx := ispanCtx.(context.Context)
 	client := proto.NewGoodsClient(global.GoodsSvcConn)
 	req := &proto.GoodsFilterRequest{}
 	req.PriceMin = common.Atoi32(c.DefaultQuery("pmin", "0"))
@@ -30,9 +32,9 @@ func List(c *gin.Context) {
 	req.TopCategory = common.Atoi32(c.DefaultQuery("c", "0"))
 	req.Brand = common.Atoi32(c.DefaultQuery("b", "0"))
 	req.PagePerNums = common.Atoi32(c.DefaultQuery("pnum", "10"))
-	req.Pages = common.Atoi32(c.DefaultQuery("pn", "1"))
+	req.Pages = common.Atoi32(c.DefaultQuery("page", "1"))
 	zap.S().Debug("invoke gRPC GoodsList service")
-	rsp, err := client.GoodsList(context.Background(), req)
+	rsp, err := client.GoodsList(spanCtx, req)
 	if err != nil {
 		zap.S().Errorw("[List] Get GoodsList failure", "error", err.Error())
 		grpc_client.ParseGrpcErrorToHttp(err, c)
@@ -42,13 +44,15 @@ func List(c *gin.Context) {
 }
 
 func New(c *gin.Context) {
+	ispanCtx, _ := c.Get("ctx")
+	spanCtx := ispanCtx.(context.Context)
 	goodsForm := forms.GoodsForm{}
 	err := validation.ValidateFormJSON(c, &goodsForm)
 	if err != nil {
 		return
 	}
 	client := proto.NewGoodsClient(global.GoodsSvcConn)
-	rsp, err := client.CreateGoods(context.Background(), &proto.CreateGoodsInfo{
+	rsp, err := client.CreateGoods(spanCtx, &proto.CreateGoodsInfo{
 		Name:            goodsForm.Name,
 		GoodsSn:         goodsForm.GoodsSn,
 		Stocks:          goodsForm.Stocks,
@@ -75,9 +79,11 @@ func New(c *gin.Context) {
 }
 
 func Detail(c *gin.Context) {
+	ispanCtx, _ := c.Get("ctx")
+	spanCtx := ispanCtx.(context.Context)
 	id := common.Atoi32(c.Param("id"))
 	client := proto.NewGoodsClient(global.GoodsSvcConn)
-	rsp, err := client.GetGoodsDetail(context.Background(), &proto.GoodInfoRequest{Id: id})
+	rsp, err := client.GetGoodsDetail(spanCtx, &proto.GoodInfoRequest{Id: id})
 	if err != nil {
 		grpc_client.ParseGrpcErrorToHttp(err, c)
 		return
@@ -88,9 +94,11 @@ func Detail(c *gin.Context) {
 }
 
 func Delete(c *gin.Context) {
+	ispanCtx, _ := c.Get("ctx")
+	spanCtx := ispanCtx.(context.Context)
 	id := common.Atoi32(c.Param("id"))
 	client := proto.NewGoodsClient(global.GoodsSvcConn)
-	_, err := client.DeleteGoods(context.Background(), &proto.DeleteGoodsInfo{Id: id})
+	_, err := client.DeleteGoods(spanCtx, &proto.DeleteGoodsInfo{Id: id})
 	if err != nil {
 		grpc_client.ParseGrpcErrorToHttp(err, c)
 		return
@@ -102,6 +110,8 @@ func Delete(c *gin.Context) {
 }
 
 func Update(c *gin.Context) {
+	ispanCtx, _ := c.Get("ctx")
+	spanCtx := ispanCtx.(context.Context)
 	id := common.Atoi32(c.Param("id"))
 	goodsForm := forms.GoodsForm{}
 	err := validation.ValidateFormJSON(c, &goodsForm)
@@ -109,7 +119,7 @@ func Update(c *gin.Context) {
 		return
 	}
 	client := proto.NewGoodsClient(global.GoodsSvcConn)
-	_, err = client.UpdateGoods(context.Background(), &proto.CreateGoodsInfo{
+	_, err = client.UpdateGoods(spanCtx, &proto.CreateGoodsInfo{
 		Id:              id,
 		Name:            goodsForm.Name,
 		GoodsSn:         goodsForm.GoodsSn,

@@ -13,10 +13,12 @@ import (
 )
 
 func List(c *gin.Context) {
+	ispanCtx, _ := c.Get("ctx")
+	spanCtx := ispanCtx.(context.Context)
 	client := proto.NewGoodsClient(global.GoodsSvcConn)
 	pn := common.Atoi32(c.DefaultQuery("pn", "0"))
 	pnum := common.Atoi32(c.DefaultQuery("pnum", "10"))
-	rsp, err := client.BrandList(context.Background(), &proto.BrandFilterRequest{
+	rsp, err := client.BrandList(spanCtx, &proto.BrandFilterRequest{
 		Pages:       pn,
 		PagePerNums: pnum,
 	})
@@ -28,13 +30,15 @@ func List(c *gin.Context) {
 }
 
 func New(c *gin.Context) {
+	ispanCtx, _ := c.Get("ctx")
+	spanCtx := ispanCtx.(context.Context)
 	brandForm := &forms.BrandForm{}
 	err := validation.ValidateFormJSON(c, &brandForm)
 	if err != nil {
 		return
 	}
 	client := proto.NewGoodsClient(global.GoodsSvcConn)
-	rsp, err := client.CreateBrand(context.Background(), &proto.BrandRequest{
+	rsp, err := client.CreateBrand(spanCtx, &proto.BrandRequest{
 		Name: brandForm.Name,
 		Logo: brandForm.Logo,
 	})
@@ -46,9 +50,11 @@ func New(c *gin.Context) {
 }
 
 func Delete(c *gin.Context) {
+	ispanCtx, _ := c.Get("ctx")
+	spanCtx := ispanCtx.(context.Context)
 	id := common.Atoi32(c.Param("id"))
 	client := proto.NewGoodsClient(global.GoodsSvcConn)
-	_, err := client.DeleteBrand(context.Background(), &proto.BrandRequest{Id: id})
+	_, err := client.DeleteBrand(spanCtx, &proto.BrandRequest{Id: id})
 	if err != nil {
 		grpc_client.ParseGrpcErrorToHttp(err, c)
 		return
@@ -60,6 +66,8 @@ func Delete(c *gin.Context) {
 }
 
 func Update(c *gin.Context) {
+	ispanCtx, _ := c.Get("ctx")
+	spanCtx := ispanCtx.(context.Context)
 	id := common.Atoi32(c.Param("id"))
 	brandForm := &forms.BrandForm{}
 	err := validation.ValidateFormJSON(c, &brandForm)
@@ -67,7 +75,7 @@ func Update(c *gin.Context) {
 		return
 	}
 	client := proto.NewGoodsClient(global.GoodsSvcConn)
-	_, err = client.UpdateBrand(context.Background(), &proto.BrandRequest{
+	_, err = client.UpdateBrand(spanCtx, &proto.BrandRequest{
 		Id:   id,
 		Name: brandForm.Name,
 		Logo: brandForm.Logo,

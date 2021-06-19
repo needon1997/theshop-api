@@ -13,6 +13,8 @@ import (
 )
 
 func SendEmail(c *gin.Context) {
+	ispanCtx, _ := c.Get("ctx")
+	spanCtx := ispanCtx.(context.Context)
 	zap.S().Debug("send Email")
 	client := proto.NewEmailSvcClient(global.EmailSvcConn)
 	emailForm := forms.EmailForm{}
@@ -20,7 +22,7 @@ func SendEmail(c *gin.Context) {
 	if err != nil {
 		return
 	}
-	_, err = client.SendVerificationCode(context.Background(), &proto.ReceiverInfoRequest{Email: emailForm.Email})
+	_, err = client.SendVerificationCode(spanCtx, &proto.ReceiverInfoRequest{Email: emailForm.Email})
 	if err != nil {
 		zap.S().Errorf("[SendEmail]   [fail to send email]  ERROR: %s", err.Error())
 		grpc_client.ParseGrpcErrorToHttp(err, c)

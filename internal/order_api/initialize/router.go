@@ -9,7 +9,7 @@ import (
 
 func InitializeRouter() *gin.Engine {
 	engine := gin.Default()
-	engine.Use(middlewares.Cors())
+	engine.Use(middlewares.Cors(), middlewares.Trace())
 	engine.GET("/healthcheck", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"code":   http.StatusOK,

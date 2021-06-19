@@ -14,8 +14,10 @@ import (
 )
 
 func List(c *gin.Context) {
+	ispanCtx, _ := c.Get("ctx")
+	spanCtx := ispanCtx.(context.Context)
 	client := proto.NewGoodsClient(global.GoodsSvcConn)
-	rsp, err := client.BannerList(context.Background(), &empty.Empty{})
+	rsp, err := client.BannerList(spanCtx, &empty.Empty{})
 	if err != nil {
 		grpc_client.ParseGrpcErrorToHttp(err, c)
 		return
@@ -24,13 +26,15 @@ func List(c *gin.Context) {
 }
 
 func New(c *gin.Context) {
+	ispanCtx, _ := c.Get("ctx")
+	spanCtx := ispanCtx.(context.Context)
 	bannerForm := &forms.BannerForm{}
 	err := validation.ValidateFormJSON(c, &bannerForm)
 	if err != nil {
 		return
 	}
 	client := proto.NewGoodsClient(global.GoodsSvcConn)
-	rsp, err := client.CreateBanner(context.Background(), &proto.BannerRequest{
+	rsp, err := client.CreateBanner(spanCtx, &proto.BannerRequest{
 		Url:   bannerForm.Url,
 		Index: bannerForm.Index,
 		Image: bannerForm.Image,
@@ -43,9 +47,11 @@ func New(c *gin.Context) {
 }
 
 func Delete(c *gin.Context) {
+	ispanCtx, _ := c.Get("ctx")
+	spanCtx := ispanCtx.(context.Context)
 	id := common.Atoi32(c.Param("id"))
 	client := proto.NewGoodsClient(global.GoodsSvcConn)
-	_, err := client.DeleteBanner(context.Background(), &proto.BannerRequest{Id: id})
+	_, err := client.DeleteBanner(spanCtx, &proto.BannerRequest{Id: id})
 	if err != nil {
 		grpc_client.ParseGrpcErrorToHttp(err, c)
 		return
@@ -57,6 +63,8 @@ func Delete(c *gin.Context) {
 }
 
 func Update(c *gin.Context) {
+	ispanCtx, _ := c.Get("ctx")
+	spanCtx := ispanCtx.(context.Context)
 	id := common.Atoi32(c.Param("id"))
 	bannerForm := forms.BannerForm{}
 	err := validation.ValidateFormJSON(c, &bannerForm)
@@ -64,7 +72,7 @@ func Update(c *gin.Context) {
 		return
 	}
 	client := proto.NewGoodsClient(global.GoodsSvcConn)
-	_, err = client.UpdateBanner(context.Background(), &proto.BannerRequest{
+	_, err = client.UpdateBanner(spanCtx, &proto.BannerRequest{
 		Id:    id,
 		Index: bannerForm.Index,
 		Image: bannerForm.Image,

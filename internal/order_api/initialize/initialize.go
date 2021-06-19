@@ -7,12 +7,16 @@ import (
 	"github.com/needon1997/theshop-api/internal/common/validation"
 	"github.com/needon1997/theshop-api/internal/order_api/global"
 	"go.uber.org/zap"
+	"io"
 )
+
+var traceCloser io.Closer
 
 func Initialize() {
 	ParseFlag()
 	common.LoadConfig(*ConfigPath, *DevMode)
 	common.NewLogger(*DevMode)
+	traceCloser = common.InitJaeger()
 	zap.S().Infof("register to consul")
 	err := common.RegisterSelfToConsul()
 	if err != nil {
@@ -39,6 +43,10 @@ func Initialize() {
 
 func Finalize() {
 	global.OrderSvcConn.Close()
+	global.GoodsSvcConn.Close()
+	global.PaymentSvcConn.Close()
+	global.InventoryConn.Close()
+	traceCloser.Close()
 	err := common.DeRegisterFromConsul()
 	if err != nil {
 		zap.S().Errorw("Fail to deregister from consul", "error", err.Error)

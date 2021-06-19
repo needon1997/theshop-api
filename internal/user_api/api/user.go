@@ -19,6 +19,8 @@ const MSG string = "msg"
 const TOKEN string = "token"
 
 func GetUserList(c *gin.Context) {
+	ispanCtx, _ := c.Get("ctx")
+	spanCtx := ispanCtx.(context.Context)
 	zap.S().Debug("Get users list")
 	client := proto.NewUserSVCClient(global.UserSvcConn)
 	pn := c.DefaultQuery("pn", "0")
@@ -38,7 +40,7 @@ func GetUserList(c *gin.Context) {
 		return
 	}
 	zap.S().Debug("invoke gRPC GetUserList service")
-	rsp, err := client.GetUserList(context.Background(), &proto.PageInfoRequest{
+	rsp, err := client.GetUserList(spanCtx, &proto.PageInfoRequest{
 		PageSize:   uint32(pageSize),
 		PageNumber: uint32(pageNumber),
 	})
@@ -51,6 +53,8 @@ func GetUserList(c *gin.Context) {
 }
 
 func UserPasswordLogin(c *gin.Context) {
+	ispanCtx, _ := c.Get("ctx")
+	spanCtx := ispanCtx.(context.Context)
 	zap.S().Debug("User Login")
 	client := proto.NewUserSVCClient(global.UserSvcConn)
 	emailPasswordForm := forms.EmailPasswordLoginForm{}
@@ -59,7 +63,7 @@ func UserPasswordLogin(c *gin.Context) {
 		return
 	}
 	zap.S().Debug("invoke gRPC getUserByEmail service")
-	userInfo, err := client.GetUserByEmail(context.Background(), &proto.EmailRequest{Email: emailPasswordForm.Email})
+	userInfo, err := client.GetUserByEmail(spanCtx, &proto.EmailRequest{Email: emailPasswordForm.Email})
 	if err != nil {
 		zap.S().Errorf("[UserPasswordLogin]   [fail to get user by mobile]  ERROR: %s", err.Error())
 		grpc_client.ParseGrpcErrorToHttp(err, c)
@@ -67,7 +71,7 @@ func UserPasswordLogin(c *gin.Context) {
 	}
 	zap.S().Debug("invoke gRPC getUserByEmail service success")
 	zap.S().Debug("invoke gRPC compare password service")
-	rsp, err := client.ComparePassword(context.Background(), &proto.ComparePasswordRequest{EncryptPwd: userInfo.Password, Password: emailPasswordForm.Password})
+	rsp, err := client.ComparePassword(spanCtx, &proto.ComparePasswordRequest{EncryptPwd: userInfo.Password, Password: emailPasswordForm.Password})
 	if err != nil {
 		zap.S().Errorf("[UserPasswordLogin]   [fail to validate password]  ERROR: %s", err.Error())
 		grpc_client.ParseGrpcErrorToHttp(err, c)
@@ -76,8 +80,9 @@ func UserPasswordLogin(c *gin.Context) {
 	if rsp.Result {
 		token := common.NewJwtToken(common.JWTUserInfoClaim{Id: int64(userInfo.Id), Nickname: userInfo.NickName, Role: uint8(userInfo.Role), StandardClaims: common.GetStandardClaim()})
 		c.JSON(http.StatusOK, gin.H{
-			MSG:   "login success",
-			TOKEN: token,
+			MSG:         "login success",
+			TOKEN:       token,
+			"nick_name": userInfo.NickName,
 		})
 	} else {
 		c.JSON(http.StatusUnauthorized, gin.H{
@@ -87,6 +92,8 @@ func UserPasswordLogin(c *gin.Context) {
 }
 
 func Register(c *gin.Context) {
+	ispanCtx, _ := c.Get("ctx")
+	spanCtx := ispanCtx.(context.Context)
 	zap.S().Debug("User Register")
 	registerForm := forms.RegisterForm{}
 	err := validation.ValidateFormJSON(c, &registerForm)
@@ -94,7 +101,7 @@ func Register(c *gin.Context) {
 		return
 	}
 	emailClient := proto.NewEmailSvcClient(global.EmailSvcConn)
-	response, err := emailClient.VerifyVerificationCode(context.Background(), &proto.VerifyCodeRequest{Email: registerForm.Email, Code: registerForm.Code})
+	response, err := emailClient.VerifyVerificationCode(spanCtx, &proto.VerifyCodeRequest{Email: registerForm.Email, Code: registerForm.Code})
 	if err != nil {
 		zap.S().Errorf("[UserRegister]   [fail to validate]  ERROR: %s", err.Error())
 		grpc_client.ParseGrpcErrorToHttp(err, c)
@@ -109,7 +116,7 @@ func Register(c *gin.Context) {
 	}
 	usrClient := proto.NewUserSVCClient(global.UserSvcConn)
 	zap.S().Debug("invoke gRPC registerUser service")
-	result, err := usrClient.CreateUser(context.Background(), &proto.CreateUserInfoRequest{Email: registerForm.Email, Password: registerForm.Password, NickName: registerForm.Nickname})
+	result, err := usrClient.CreateUser(spanCtx, &proto.CreateUserInfoRequest{Email: registerForm.Email, Password: registerForm.Password, NickName: registerForm.Nickname})
 	if err != nil {
 		zap.S().Errorf("[UserRegister]   [fail to register new user]  ERROR: %s", err.Error())
 		grpc_client.ParseGrpcErrorToHttp(err, c)

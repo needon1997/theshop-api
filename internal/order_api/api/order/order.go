@@ -17,40 +17,44 @@ const (
 	ADMIN_ROLE uint8 = 2
 )
 
-func List(ctx *gin.Context) {
+func List(c *gin.Context) {
+	ispanCtx, _ := c.Get("c")
+	spanCtx := ispanCtx.(context.Context)
 	//check whether it is admin or normal user
-	Iclaims, exist := ctx.Get("claims")
+	Iclaims, exist := c.Get("claims")
 	if !exist {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "access unauthorized"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "access unauthorized"})
 	}
 	claim, _ := Iclaims.(common.JWTUserInfoClaim)
 	request := &proto.OrderFilterRequest{}
 	if claim.Role == USER_ROLE {
 		request.UserId = int32(claim.Id)
 	}
-	request.PagePerNums = common.Atoi32(ctx.DefaultQuery("psize", "10"))
-	request.Pages = common.Atoi32(ctx.DefaultQuery("pn", "1"))
+	request.PagePerNums = common.Atoi32(c.DefaultQuery("psize", "10"))
+	request.Pages = common.Atoi32(c.DefaultQuery("pn", "1"))
 	orderClient := proto.NewOrderClient(global.OrderSvcConn)
-	orderList, err := orderClient.OrderList(context.Background(), request)
+	orderList, err := orderClient.OrderList(spanCtx, request)
 	if err != nil {
-		grpc_client.ParseGrpcErrorToHttp(err, ctx)
+		grpc_client.ParseGrpcErrorToHttp(err, c)
 		return
 	}
-	ctx.JSON(http.StatusOK, orderList)
+	c.JSON(http.StatusOK, orderList)
 	return
 }
-func New(ctx *gin.Context) {
+func New(c *gin.Context) {
+	ispanCtx, _ := c.Get("ctx")
+	spanCtx := ispanCtx.(context.Context)
 	orderForm := &forms.CreateOrderForm{}
-	err := validation.ValidateFormJSON(ctx, orderForm)
+	err := validation.ValidateFormJSON(c, orderForm)
 	if err != nil {
 		return
 	}
-	IuserId, _ := ctx.Get("userID")
-	Itoken, _ := ctx.Get("x-token")
+	IuserId, _ := c.Get("userID")
+	Itoken, _ := c.Get("x-token")
 	token := Itoken.(string)
 	userId := IuserId.(int64)
 	orderClient := proto.NewOrderClient(global.OrderSvcConn)
-	order, err := orderClient.CreateOrder(context.Background(), &proto.OrderRequest{
+	order, err := orderClient.CreateOrder(spanCtx, &proto.OrderRequest{
 		UserId:  int32(userId),
 		Address: orderForm.Address,
 		Mobile:  orderForm.Mobile,
@@ -58,42 +62,44 @@ func New(ctx *gin.Context) {
 		Note:    orderForm.Post,
 	})
 	if err != nil {
-		grpc_client.ParseGrpcErrorToHttp(err, ctx)
+		grpc_client.ParseGrpcErrorToHttp(err, c)
 		return
 	}
 	payClient := proto.NewPaymentClient(global.PaymentSvcConn)
-	response, err := payClient.CreatePayment(context.Background(), &proto.CreatePaymentRequest{
-		OrderId:  order.Id,
+	response, err := payClient.CreatePayment(spanCtx, &proto.CreatePaymentRequest{
+		OrderSn:  order.OrderSn,
 		Currency: "CAD",
-		Total:    100,
+		Total:    int32(order.Total * 100),
 		Token:    token,
 	})
 	if err != nil {
-		grpc_client.ParseGrpcErrorToHttp(err, ctx)
+		grpc_client.ParseGrpcErrorToHttp(err, c)
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"redirect": response.AcceptUrl,
 	})
 }
-func Detail(ctx *gin.Context) {
-	id := common.Atoi32(ctx.Param("id"))
-	Iclaims, exist := ctx.Get("claims")
+func Detail(c *gin.Context) {
+	ispanCtx, _ := c.Get("ctx")
+	spanCtx := ispanCtx.(context.Context)
+	orderSn := c.Param("ordersn")
+	Iclaims, exist := c.Get("claims")
 	if !exist {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "access unauthorized"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "access unauthorized"})
 	}
 	claim, _ := Iclaims.(common.JWTUserInfoClaim)
 	request := &proto.OrderRequest{}
-	request.Id = id
+	request.OrderSn = orderSn
 	if claim.Role == USER_ROLE {
 		request.UserId = int32(claim.Id)
 	}
 	orderClient := proto.NewOrderClient(global.OrderSvcConn)
-	orderDetail, err := orderClient.OrderDetail(context.Background(), request)
+	orderDetail, err := orderClient.OrderDetail(spanCtx, request)
 	if err != nil {
-		grpc_client.ParseGrpcErrorToHttp(err, ctx)
+		grpc_client.ParseGrpcErrorToHttp(err, c)
 		return
 	}
-	ctx.JSON(http.StatusOK, orderDetail)
+	c.JSON(http.StatusOK, orderDetail)
 	return
 }

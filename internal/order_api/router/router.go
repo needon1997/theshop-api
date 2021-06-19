@@ -11,19 +11,19 @@ import (
 func InitOrderRouter(router *gin.RouterGroup) {
 	cartRouter := router.Group("/cart").Use(middlewares.JWTAUTH())
 	{
-		cartRouter.GET("/", cart.List)
+		cartRouter.GET("", cart.List)
 		cartRouter.DELETE("/:id", cart.Delete)
-		cartRouter.POST("/", cart.New)
-		cartRouter.PATCH("/", cart.Edit)
+		cartRouter.POST("", cart.New)
+		cartRouter.PATCH("", cart.Edit)
 	}
 	orderRouter := router.Group("/order").Use(middlewares.JWTAUTH())
 	{
-		orderRouter.GET("/", order.List)
+		orderRouter.GET("", order.List)
 		orderRouter.POST("", middlewares.JwtTokenPassThrough(), order.New)
-		orderRouter.GET("/:id", order.Detail)
+		orderRouter.GET("/:ordersn", order.Detail)
 	}
 	paymentRouter := router.Group("/payment").Use(middlewares.JWTAUTH())
 	{
-		paymentRouter.GET("/execute/:id", payment.Execute)
+		paymentRouter.GET("/execute/:ordersn", payment.Execute)
 	}
 }

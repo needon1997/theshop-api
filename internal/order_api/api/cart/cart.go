@@ -12,23 +12,31 @@ import (
 	"net/http"
 )
 
-func List(ctx *gin.Context) {
-	uidStr, _ := ctx.Get("userID")
+func List(c *gin.Context) {
+	ispanCtx, _ := c.Get("c")
+	spanCtx := ispanCtx.(context.Context)
+	uidStr, _ := c.Get("userID")
 	uid, _ := uidStr.(int64)
 	orderClient := proto.NewOrderClient(global.OrderSvcConn)
-	cartItemList, err := orderClient.CartItemList(context.Background(), &proto.UserInfo{Id: int32(uid)})
+	cartItemList, err := orderClient.CartItemList(spanCtx, &proto.UserInfo{Id: int32(uid)})
 	if err != nil {
-		grpc_client.ParseGrpcErrorToHttp(err, ctx)
+		grpc_client.ParseGrpcErrorToHttp(err, c)
 		return
 	}
 	goodsId := make([]int32, 0)
 	for i := 0; i < int(cartItemList.Total); i++ {
 		goodsId = append(goodsId, cartItemList.Data[i].GoodsId)
 	}
+	if len(goodsId) == 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"total": 0,
+		})
+		return
+	}
 	goodClient := proto.NewGoodsClient(global.GoodsSvcConn)
-	goodsList, err := goodClient.BatchGetGoods(context.Background(), &proto.BatchGoodsIdInfo{Id: goodsId})
+	goodsList, err := goodClient.BatchGetGoods(spanCtx, &proto.BatchGoodsIdInfo{Id: goodsId})
 	if err != nil {
-		grpc_client.ParseGrpcErrorToHttp(err, ctx)
+		grpc_client.ParseGrpcErrorToHttp(err, c)
 		return
 	}
 	rspData := make([]map[string]interface{}, 0)
@@ -40,87 +48,94 @@ func List(ctx *gin.Context) {
 			"goods_image": goodsList.Data[i].GoodsFrontImage,
 			"num":         cartItemList.Data[i].Nums,
 			"checked":     cartItemList.Data[i].Checked,
+			"goods_price": goodsList.Data[i].ShopPrice,
 		})
 	}
-	ctx.JSON(http.StatusOK, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"total": goodsList.Total,
 		"data":  rspData,
 	})
 	return
 }
-func Delete(ctx *gin.Context) {
-	uidStr, _ := ctx.Get("userID")
+func Delete(c *gin.Context) {
+	ispanCtx, _ := c.Get("ctx")
+	spanCtx := ispanCtx.(context.Context)
+	uidStr, _ := c.Get("userID")
 	uid, _ := uidStr.(int64)
-	gid := common.Atoi32(ctx.Param("gid"))
+	gid := common.Atoi32(c.Param("id"))
 	orderClient := proto.NewOrderClient(global.OrderSvcConn)
-	_, err := orderClient.DeleteCartItem(context.Background(), &proto.CartItemRequest{UserId: int32(uid), GoodsId: gid})
+	_, err := orderClient.DeleteCartItem(spanCtx, &proto.CartItemRequest{UserId: int32(uid), GoodsId: gid})
 	if err != nil {
-		grpc_client.ParseGrpcErrorToHttp(err, ctx)
+		grpc_client.ParseGrpcErrorToHttp(err, c)
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"msg": "delete success",
 	})
 	return
 }
-func New(ctx *gin.Context) {
-	uidStr, _ := ctx.Get("userID")
+func New(c *gin.Context) {
+	ispanCtx, _ := c.Get("ctx")
+	spanCtx := ispanCtx.(context.Context)
+	uidStr, _ := c.Get("userID")
 	uid, _ := uidStr.(int64)
 	cartItemForm := &forms.CartItemCreateForm{}
-	err := validation.ValidateFormJSON(ctx, cartItemForm)
+	err := validation.ValidateFormJSON(c, cartItemForm)
 	if err != nil {
 		return
 	}
 	goodsClient := proto.NewGoodsClient(global.GoodsSvcConn)
 	//check existence of the goods
-	_, err = goodsClient.GetGoodsDetail(context.Background(), &proto.GoodInfoRequest{Id: cartItemForm.GoodsId})
+	_, err = goodsClient.GetGoodsDetail(spanCtx, &proto.GoodInfoRequest{Id: cartItemForm.GoodsId})
 	if err != nil {
-		grpc_client.ParseGrpcErrorToHttp(err, ctx)
+		grpc_client.ParseGrpcErrorToHttp(err, c)
 		return
 	}
 	inventoryClient := proto.NewInventoryClient(global.InventoryConn)
 	//check availability of the goods
-	invDetail, err := inventoryClient.InvDetail(context.Background(), &proto.GoodsInvInfo{GoodsId: cartItemForm.GoodsId})
+	invDetail, err := inventoryClient.InvDetail(spanCtx, &proto.GoodsInvInfo{GoodsId: cartItemForm.GoodsId})
 	if err != nil {
-		grpc_client.ParseGrpcErrorToHttp(err, ctx)
+		grpc_client.ParseGrpcErrorToHttp(err, c)
 		return
 	}
 	if invDetail.Num < cartItemForm.Nums {
-		ctx.JSON(http.StatusBadRequest, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"msg": "insufficient inventory",
 		})
 		return
 	}
 	orderClient := proto.NewOrderClient(global.OrderSvcConn)
-	response, err := orderClient.CreateCartItem(context.Background(), &proto.CartItemRequest{UserId: int32(uid), GoodsId: cartItemForm.GoodsId, Nums: cartItemForm.Nums})
+	response, err := orderClient.CreateCartItem(spanCtx, &proto.CartItemRequest{UserId: int32(uid), GoodsId: cartItemForm.GoodsId, Nums: cartItemForm.Nums})
 	if err != nil {
-		grpc_client.ParseGrpcErrorToHttp(err, ctx)
+		grpc_client.ParseGrpcErrorToHttp(err, c)
 		return
 	}
-	ctx.JSON(http.StatusOK, response)
+	c.JSON(http.StatusOK, response)
 	return
 }
 
-func Edit(ctx *gin.Context) {
-	uidStr, _ := ctx.Get("userID")
+func Edit(c *gin.Context) {
+	ispanCtx, _ := c.Get("ctx")
+	spanCtx := ispanCtx.(context.Context)
+	uidStr, _ := c.Get("userID")
 	uid, _ := uidStr.(int64)
 	cartItemForm := &forms.CartItemUpdateForm{}
-	err := validation.ValidateFormJSON(ctx, cartItemForm)
+	err := validation.ValidateFormJSON(c, cartItemForm)
 	if err != nil {
 		return
 	}
 	orderClient := proto.NewOrderClient(global.OrderSvcConn)
-	_, err = orderClient.UpdateCartItem(context.Background(), &proto.CartItemRequest{
+	_, err = orderClient.UpdateCartItem(spanCtx, &proto.CartItemRequest{
 		UserId:  int32(uid),
 		GoodsId: cartItemForm.GoodsId,
 		Nums:    cartItemForm.Nums,
 		Checked: *cartItemForm.Checked,
 	})
 	if err != nil {
-		grpc_client.ParseGrpcErrorToHttp(err, ctx)
+		grpc_client.ParseGrpcErrorToHttp(err, c)
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"msg": "update success",
 	})
 	return

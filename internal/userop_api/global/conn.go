@@ -2,5 +2,5 @@ package global
 
 import "google.golang.org/grpc"
 
-var UserSvcConn *grpc.ClientConn
-var EmailSvcConn *grpc.ClientConn
+var UserOpSvcConn *grpc.ClientConn
+var GoodsSvcConn *grpc.ClientConn

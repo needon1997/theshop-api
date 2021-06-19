@@ -9,6 +9,7 @@ type ServerConfiguration struct {
 	LogConfig     LogConfiguration         `mapstructure:"log"`
 	ConsulConfig  ConsulConfiguration      `mapstructure:"consul"`
 	JWTConfig     JWTConfiguration         `mapstructure:"jwt"`
+	TraceConfig   TracingConfiguration     `mapstructure:"trace"`
 }
 type ServiceNameConfiguration struct {
 	UserServiceName      string `mapstructure:"user_svc_name"`
@@ -17,6 +18,7 @@ type ServiceNameConfiguration struct {
 	InventoryServiceName string `mapstructure:"inventory_svc_name"`
 	OrderServiceName     string `mapstructure:"order_svc_name"`
 	PaymentServiceName   string `mapstructure:"payment_svc_name"`
+	UserOpServiceName    string `mapstructure:"userop_svc_name"`
 }
 type LogConfiguration struct {
 	LogPath string `mapstructure:"log_path"`
@@ -40,4 +42,9 @@ type JWTConfiguration struct {
 	Secret   string `mapstructure:"secret"`
 	ExpireAt int64  `mapstructure:"expire_at"`
 	Issuer   string `mapstructure:"issuer"`
+}
+type TracingConfiguration struct {
+	Name string `mapstructure:"name"`
+	Host string `mapstructure:"host"`
+	Port int    `mapstructure:"port"`
 }
