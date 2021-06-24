@@ -23,11 +23,11 @@ func Initialize() {
 	TraceCloser = common.InitJaeger()
 	global.UserSvcConn, err = grpc_client.GetUserSvcConn()
 	if err != nil {
-		zap.S().Errorw("Fail to get user svc connection", "error", err.Error)
+		zap.S().Errorw("Fail to get user svc connection", "error", err)
 	}
 	global.EmailSvcConn, err = grpc_client.GetEmailSvcConn()
 	if err != nil {
-		zap.S().Errorw("Fail to get email svc connection", "error", err.Error)
+		zap.S().Errorw("Fail to get email svc connection", "error", err)
 	}
 }
 

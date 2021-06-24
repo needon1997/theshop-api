@@ -18,11 +18,11 @@ func Initialize() {
 	TraceCloser = common.InitJaeger()
 	global.UserOpSvcConn, err = grpc_client.GetUserOpSvcConn()
 	if err != nil {
-		zap.S().Errorw("Fail to get userop svc connection", "error", err.Error)
+		zap.S().Errorw("Fail to get userop svc connection", "error", err)
 	}
 	global.GoodsSvcConn, err = grpc_client.GetGoodsSvcConn()
 	if err != nil {
-		zap.S().Errorw("Fail to get goods svc connection", "error", err.Error)
+		zap.S().Errorw("Fail to get goods svc connection", "error", err)
 	}
 }
 

@@ -23,7 +23,7 @@ func Initialize() {
 	})
 	global.GoodsSvcConn, err = grpc_client.GetGoodsSvcConn()
 	if err != nil {
-		zap.S().Errorw("Fail to get goods svc connection", "error", err.Error)
+		zap.S().Errorw("Fail to get goods svc connection", "error", err)
 	}
 }
 

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/needon1997/theshop-api/internal/common"
-	"github.com/sercand/kuberesolver"
+	"github.com/sercand/kuberesolver/v3"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/resolver"
 	"sort"

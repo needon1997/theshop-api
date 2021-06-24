@@ -1,7 +1,6 @@
 package grpc_client
 
 import (
-	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/grpc-ecosystem/go-grpc-middleware/retry"
@@ -77,7 +76,7 @@ func GetUserSvcConn() (*grpc.ClientConn, error) {
 		otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer())))
 	if err != nil {
 		zap.S().Errorf("[GetUserSvcClient]  [fail to connect with service provider]   ERROR: %s", err.Error())
-		return nil, errors.New(INTERNAL_ERROR)
+		return nil, err
 	}
 	return conn, nil
 }
@@ -88,7 +87,7 @@ func GetEmailSvcConn() (*grpc.ClientConn, error) {
 		otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer())))
 	if err != nil {
 		zap.S().Errorf("[GetEmailSvcClient]  [fail to connect with service provider]   ERROR: %s", err.Error())
-		return nil, errors.New(INTERNAL_ERROR)
+		return nil, err
 	}
 	return conn, nil
 }
@@ -99,7 +98,7 @@ func GetGoodsSvcConn() (*grpc.ClientConn, error) {
 		otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer())))
 	if err != nil {
 		zap.S().Errorf("[GetGoodsSvcClient]  [fail to connect with service provider]   ERROR: %s", err.Error())
-		return nil, errors.New(INTERNAL_ERROR)
+		return nil, err
 	}
 	return conn, nil
 }
@@ -110,7 +109,7 @@ func GetInventorySvcConn() (*grpc.ClientConn, error) {
 		otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer())))
 	if err != nil {
 		zap.S().Errorf("[GetInventorySvcClient]  [fail to connect with service provider]   ERROR: %s", err.Error())
-		return nil, errors.New(INTERNAL_ERROR)
+		return nil, err
 	}
 	return conn, nil
 }
@@ -121,7 +120,7 @@ func GetOrderSvcConn() (*grpc.ClientConn, error) {
 		otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer())))
 	if err != nil {
 		zap.S().Errorf("[GetOrderSvcClient]  [fail to connect with service provider]   ERROR: %s", err.Error())
-		return nil, errors.New(INTERNAL_ERROR)
+		return nil, err
 	}
 	return conn, nil
 }
@@ -132,7 +131,7 @@ func GetPaymentSvcConn() (*grpc.ClientConn, error) {
 		otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer())))
 	if err != nil {
 		zap.S().Errorf("[GetPaymentSvcClient]  [fail to connect with service provider]   ERROR: %s", err.Error())
-		return nil, errors.New(INTERNAL_ERROR)
+		return nil, err
 	}
 	return conn, nil
 }
@@ -143,7 +142,7 @@ func GetUserOpSvcConn() (*grpc.ClientConn, error) {
 		otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer())))
 	if err != nil {
 		zap.S().Errorf("[GetUserOpSvcConn]  [fail to connect with service provider]   ERROR: %s", err.Error())
-		return nil, errors.New(INTERNAL_ERROR)
+		return nil, err
 	}
 	return conn, nil
 }

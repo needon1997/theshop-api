@@ -20,19 +20,19 @@ func Initialize() {
 	traceCloser = common.InitJaeger()
 	global.OrderSvcConn, err = grpc_client.GetOrderSvcConn()
 	if err != nil {
-		zap.S().Errorw("Fail to get order svc connection", "error", err.Error)
+		zap.S().Errorw("Fail to get order svc connection", "error", err)
 	}
 	global.GoodsSvcConn, err = grpc_client.GetGoodsSvcConn()
 	if err != nil {
-		zap.S().Errorw("Fail to get goods svc connection", "error", err.Error)
+		zap.S().Errorw("Fail to get goods svc connection", "error", err)
 	}
 	global.InventoryConn, err = grpc_client.GetInventorySvcConn()
 	if err != nil {
-		zap.S().Errorw("Fail to get inventory svc connection", "error", err.Error)
+		zap.S().Errorw("Fail to get inventory svc connection", "error", err)
 	}
 	global.PaymentSvcConn, err = grpc_client.GetPaymentSvcConn()
 	if err != nil {
-		zap.S().Errorw("Fail to get payment svc connection", "error", err.Error)
+		zap.S().Errorw("Fail to get payment svc connection", "error", err)
 	}
 	RegisterValidator(map[string]validator.Func{"mobile": validation.ValidateMobile})
 }
