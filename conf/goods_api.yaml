@@ -1,0 +1,20 @@
+name: "goods-web"
+host: "0.0.0.0"
+port: 10090
+svc_name:
+  user_svc_name: "user-service"
+  email_svc_name: "email-service"
+  goods_svc_name: "goods-service"
+  order_svc_name: "order-service"
+  invetory_svc_name: "inventory-service"
+log:
+  log_path: "./logs/goods_api.log"
+
+jwt:
+  secret: "dNgV8ajo0C5OKNqKkTxiN43WJgqmJUeG"
+  expire_at: 86400
+  issuer: "theshop"
+trace:
+  name: "goods-api"
+  host: "127.0.0.1"
+  port: 6831

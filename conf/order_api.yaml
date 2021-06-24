@@ -1,0 +1,21 @@
+name: "order-web"
+host: "0.0.0.0"
+port: 10090
+svc_name:
+  user_svc_name: "user-service"
+  email_svc_name: "email-service"
+  goods_svc_name: "goods-service"
+  order_svc_name: "order-service"
+  inventory_svc_name: "inventory-service"
+  payment_svc_name: "pay-service"
+log:
+  log_path: "./logs/order_api.log"
+
+jwt:
+  secret: "dNgV8ajo0C5OKNqKkTxiN43WJgqmJUeG"
+  expire_at: 86400
+  issuer: "theshop"
+trace:
+  name: "order-api"
+  host: "127.0.0.1"
+  port: 6831

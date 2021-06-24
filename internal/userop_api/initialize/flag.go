@@ -10,7 +10,8 @@ var (
 )
 
 func ParseFlag() {
-	flag.StringVar(ConfigPath, "config", "./config.yaml", "the location of the configuration file")
+	flag.StringVar(ConfigPath, "config", "./conf/config.yaml", "the location of the configuration file")
 	flag.BoolVar(DevMode, "dev", false, "dev or prod")
 	flag.Parse()
+
 }
