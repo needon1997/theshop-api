@@ -13,15 +13,11 @@ import (
 var traceCloser io.Closer
 
 func Initialize() {
+	var err error
 	ParseFlag()
 	common.LoadConfig(*ConfigPath, *DevMode)
 	common.NewLogger(*DevMode)
 	traceCloser = common.InitJaeger()
-	zap.S().Infof("register to consul")
-	err := common.RegisterSelfToConsul()
-	if err != nil {
-		zap.S().Errorw("Fail to register to consul", "error", err.Error)
-	}
 	global.OrderSvcConn, err = grpc_client.GetOrderSvcConn()
 	if err != nil {
 		zap.S().Errorw("Fail to get order svc connection", "error", err.Error)
@@ -47,10 +43,6 @@ func Finalize() {
 	global.PaymentSvcConn.Close()
 	global.InventoryConn.Close()
 	traceCloser.Close()
-	err := common.DeRegisterFromConsul()
-	if err != nil {
-		zap.S().Errorw("Fail to deregister from consul", "error", err.Error)
-	}
 	zap.S().Sync()
 	zap.L().Sync()
 }

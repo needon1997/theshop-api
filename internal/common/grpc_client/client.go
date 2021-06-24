@@ -6,7 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
-	"github.com/needon1997/theshop-api/internal/common"
 	"github.com/needon1997/theshop-api/internal/common/config"
 	_ "github.com/needon1997/theshop-api/internal/common/grpc_consul_resolver"
 	"github.com/opentracing/opentracing-go"
@@ -69,11 +68,11 @@ func ParseGrpcErrorToHttp(err error, c *gin.Context) {
 	}
 }
 
-const CONSUL_LB_TEMPLATE = "consul://%s/%s"
+const LB_TEMPLATE = "kubernetes://%s:%v/"
 
 func GetUserSvcConn() (*grpc.ClientConn, error) {
 	zap.S().Debug("Get connect gRPC user service server")
-	url := fmt.Sprintf(CONSUL_LB_TEMPLATE, config.ServerConfig.ServiceConfig.UserServiceName, "")
+	url := fmt.Sprintf(LB_TEMPLATE, config.ServerConfig.ServiceConfig.UserServiceName, 80)
 	conn, err := grpc.Dial(url, grpc.WithInsecure(), grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy": "round_robin"}`), grpc.WithUnaryInterceptor(grpc_retry.UnaryClientInterceptor(opts...)), grpc.WithUnaryInterceptor(
 		otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer())))
 	if err != nil {
@@ -84,7 +83,7 @@ func GetUserSvcConn() (*grpc.ClientConn, error) {
 }
 func GetEmailSvcConn() (*grpc.ClientConn, error) {
 	zap.S().Debug("Get connect gRPC email service server")
-	url := fmt.Sprintf(CONSUL_LB_TEMPLATE, config.ServerConfig.ServiceConfig.EmailServiceName, "")
+	url := fmt.Sprintf(LB_TEMPLATE, config.ServerConfig.ServiceConfig.EmailServiceName, 80)
 	conn, err := grpc.Dial(url, grpc.WithInsecure(), grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy": "round_robin"}`), grpc.WithUnaryInterceptor(grpc_retry.UnaryClientInterceptor(opts...)), grpc.WithUnaryInterceptor(
 		otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer())))
 	if err != nil {
@@ -95,7 +94,7 @@ func GetEmailSvcConn() (*grpc.ClientConn, error) {
 }
 func GetGoodsSvcConn() (*grpc.ClientConn, error) {
 	zap.S().Debug("Get connect gRPC goods service server")
-	url := fmt.Sprintf(CONSUL_LB_TEMPLATE, config.ServerConfig.ServiceConfig.GoodsServiceName, "")
+	url := fmt.Sprintf(LB_TEMPLATE, config.ServerConfig.ServiceConfig.GoodsServiceName, 80)
 	conn, err := grpc.Dial(url, grpc.WithInsecure(), grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy": "round_robin"}`), grpc.WithUnaryInterceptor(grpc_retry.UnaryClientInterceptor(opts...)), grpc.WithUnaryInterceptor(
 		otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer())))
 	if err != nil {
@@ -106,7 +105,7 @@ func GetGoodsSvcConn() (*grpc.ClientConn, error) {
 }
 func GetInventorySvcConn() (*grpc.ClientConn, error) {
 	zap.S().Debug("Get connect gRPC inventory service server")
-	url := fmt.Sprintf(CONSUL_LB_TEMPLATE, config.ServerConfig.ServiceConfig.InventoryServiceName, "")
+	url := fmt.Sprintf(LB_TEMPLATE, config.ServerConfig.ServiceConfig.InventoryServiceName, 80)
 	conn, err := grpc.Dial(url, grpc.WithInsecure(), grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy": "round_robin"}`), grpc.WithUnaryInterceptor(grpc_retry.UnaryClientInterceptor(opts...)), grpc.WithUnaryInterceptor(
 		otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer())))
 	if err != nil {
@@ -117,7 +116,7 @@ func GetInventorySvcConn() (*grpc.ClientConn, error) {
 }
 func GetOrderSvcConn() (*grpc.ClientConn, error) {
 	zap.S().Debug("Get connect gRPC order service server")
-	url := fmt.Sprintf(CONSUL_LB_TEMPLATE, config.ServerConfig.ServiceConfig.OrderServiceName, "")
+	url := fmt.Sprintf(LB_TEMPLATE, config.ServerConfig.ServiceConfig.OrderServiceName, 80)
 	conn, err := grpc.Dial(url, grpc.WithInsecure(), grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy": "round_robin"}`), grpc.WithUnaryInterceptor(grpc_retry.UnaryClientInterceptor(opts...)), grpc.WithUnaryInterceptor(
 		otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer())))
 	if err != nil {
@@ -128,13 +127,8 @@ func GetOrderSvcConn() (*grpc.ClientConn, error) {
 }
 func GetPaymentSvcConn() (*grpc.ClientConn, error) {
 	zap.S().Debug("Get connect gRPC payment service server")
-	//url := fmt.Sprintf(CONSUL_LB_TEMPLATE, config.ServerConfig.ServiceConfig.PaymentServiceName, "")
-	svc, err := common.GetServicesByNameTags(config.ServerConfig.ServiceConfig.PaymentServiceName, "")
-	if err != nil {
-		zap.S().Errorf("[GetPaymentSvcClient]  [fail to connect with service provider]   ERROR: %s", err.Error())
-		return nil, errors.New(INTERNAL_ERROR)
-	}
-	conn, err := grpc.Dial(fmt.Sprintf("%s:%v", svc[0].Address, svc[0].Port), grpc.WithInsecure(), grpc.WithUnaryInterceptor(grpc_retry.UnaryClientInterceptor(opts...)), grpc.WithUnaryInterceptor(
+	url := fmt.Sprintf(LB_TEMPLATE, config.ServerConfig.ServiceConfig.PaymentServiceName, "")
+	conn, err := grpc.Dial(url, grpc.WithInsecure(), grpc.WithUnaryInterceptor(grpc_retry.UnaryClientInterceptor(opts...)), grpc.WithUnaryInterceptor(
 		otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer())))
 	if err != nil {
 		zap.S().Errorf("[GetPaymentSvcClient]  [fail to connect with service provider]   ERROR: %s", err.Error())
@@ -144,7 +138,7 @@ func GetPaymentSvcConn() (*grpc.ClientConn, error) {
 }
 func GetUserOpSvcConn() (*grpc.ClientConn, error) {
 	zap.S().Debug("Get connect gRPC userop service server")
-	url := fmt.Sprintf(CONSUL_LB_TEMPLATE, config.ServerConfig.ServiceConfig.UserOpServiceName, "")
+	url := fmt.Sprintf(LB_TEMPLATE, config.ServerConfig.ServiceConfig.UserOpServiceName, 80)
 	conn, err := grpc.Dial(url, grpc.WithInsecure(), grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy": "round_robin"}`), grpc.WithUnaryInterceptor(grpc_retry.UnaryClientInterceptor(opts...)), grpc.WithUnaryInterceptor(
 		otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer())))
 	if err != nil {

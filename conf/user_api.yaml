@@ -1,4 +1,4 @@
-name: "user-api"
+name: "user_api"
 host: "0.0.0.0"
 port: 10090
 svc_name:
@@ -16,6 +16,6 @@ jwt:
   issuer: "theshop"
 
 trace:
-  name: "user-api"
+  name: "user_api"
   host: "127.0.0.1"
   port: 6831

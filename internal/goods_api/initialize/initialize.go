@@ -13,15 +13,11 @@ import (
 var traceCloser io.Closer
 
 func Initialize() {
+	var err error
 	ParseFlag()
 	common.LoadConfig(*ConfigPath, *DevMode)
 	common.NewLogger(*DevMode)
 	traceCloser = common.InitJaeger()
-	zap.S().Infof("register to consul")
-	err := common.RegisterSelfToConsul()
-	if err != nil {
-		zap.S().Errorw("Fail to register to consul", "error", err.Error)
-	}
 	RegisterValidator(map[string]validator.Func{
 		"mobile": validators.ValidateMobile,
 	})
@@ -35,10 +31,6 @@ func Finalize() {
 	zap.S().Info("deregister from consul")
 	traceCloser.Close()
 	global.GoodsSvcConn.Close()
-	err := common.DeRegisterFromConsul()
-	if err != nil {
-		zap.S().Errorw("Fail to deregister from consul", "error", err.Error)
-	}
 	zap.S().Sync()
 	zap.L().Sync()
 }

@@ -13,14 +13,10 @@ import (
 var TraceCloser io.Closer
 
 func Initialize() {
+	var err error
 	ParseFlag()
 	common.LoadConfig(*ConfigPath, *DevMode)
 	common.NewLogger(*DevMode)
-	zap.S().Infof("register to consul")
-	err := common.RegisterSelfToConsul()
-	if err != nil {
-		zap.S().Errorw("Fail to register to consul", "error", err.Error)
-	}
 	RegisterValidator(map[string]validator.Func{
 		"mobile": validation.ValidateMobile,
 	})
@@ -39,10 +35,6 @@ func Finalize() {
 	global.EmailSvcConn.Close()
 	global.UserSvcConn.Close()
 	TraceCloser.Close()
-	err := common.DeRegisterFromConsul()
-	if err != nil {
-		zap.S().Errorw("Fail to deregister from consul", "error", err.Error)
-	}
 	zap.S().Sync()
 	zap.L().Sync()
 }

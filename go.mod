@@ -14,6 +14,7 @@ require (
 	github.com/json-iterator/go v1.1.11 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
+	github.com/sercand/kuberesolver/v3 v3.1.0 // indirect
 	github.com/spf13/viper v1.7.1
 	github.com/uber/jaeger-client-go v2.29.1+incompatible
 	github.com/uber/jaeger-lib v2.4.1+incompatible // indirect

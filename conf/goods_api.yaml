@@ -15,6 +15,6 @@ jwt:
   expire_at: 86400
   issuer: "theshop"
 trace:
-  name: "goods-api"
+  name: "goods_api"
   host: "127.0.0.1"
   port: 6831

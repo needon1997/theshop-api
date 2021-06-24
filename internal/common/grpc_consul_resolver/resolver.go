@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/needon1997/theshop-api/internal/common"
+	"github.com/sercand/kuberesolver"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/resolver"
 	"sort"
@@ -12,6 +13,7 @@ import (
 
 func init() {
 	resolver.Register(&ConsulBuilder{})
+	resolver.Register(kuberesolver.NewBuilder(nil /*custom kubernetes client*/, "kubernetes"))
 }
 
 type ConsulBuilder struct {
